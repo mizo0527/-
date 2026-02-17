@@ -66,12 +66,16 @@
     }
 
     .grid{
-      width:100%;
-      max-width:calc(100vw - 24px);
-      margin:0 auto;
-      touch-action:manipulation;
-    }
-  }
+  width:100%;
+  max-width:100%;
+  margin:0 auto;
+  touch-action:manipulation;
+}
+  .row button{
+  flex: 1 1 140px;   /* 140pxを下回るなら折り返す */
+  min-width: 140px;
+}
+
 
 </style>
 
