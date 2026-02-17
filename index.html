@@ -70,6 +70,49 @@
     .okTitle{font-size:18px;font-weight:900;margin:0 0 6px}
     .code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:#fff;border:1px solid #cfd3da;border-radius:10px;padding:10px;margin-top:8px}
     .small{font-size:12px;color:#444}
+/* まず全体に効かせる（横スクロール対策の土台） */
+*{
+  box-sizing:border-box;
+}
+
+html, body{
+  margin:0;
+  padding:0;
+  overflow-x:hidden;
+}
+
+/* ===== スマホ用調整 ===== */
+@media (max-width:520px){
+
+  .wrap{
+    max-width:100%;
+    padding:10px;
+  }
+
+  h1{
+    font-size:18px;
+  }
+
+  .card{
+    padding:12px;
+  }
+
+  button{
+    font-size:16px;
+    padding:12px;
+  }
+
+  input{
+    font-size:20px;
+  }
+
+  .grid{
+    width:100%;
+    max-width:95vw;
+    margin:0 auto;
+  }
+}
+
   </style>
 </head>
 <body>
