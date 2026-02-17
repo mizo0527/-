@@ -47,16 +47,17 @@
     font-weight:600;
   }
 
-  .grid{
-    width:100%;
-    max-width:calc(100vw - 24px);
-    margin:0 auto;
-  }
-  .grid{ touch-action: manipulation; }
+ .grid{
+  display:grid;
+  grid-template-columns:repeat(9,1fr);
+  gap:0;
 
+  width:100%;
+  max-width:calc(100vw - 24px);
+  margin:0 auto;
+
+  border:2px solid #111; /* ←これ追加 */
 }
-
-
 </style>
 
 </head>
