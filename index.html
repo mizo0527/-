@@ -200,8 +200,6 @@
   </div>
 </div>
 
-
-
     <p class="okTitle">🎉 クリア！おつかれさんで！</p>
 
     <div style="margin-top:10px">
@@ -282,8 +280,6 @@
   const boardEl = document.getElementById("board");
   const statusEl = document.getElementById("status");
   const okBoxEl = document.getElementById("okBox");
-  const dailyWordEl = document.getElementById("dailyWord");
-  dailyWordEl.textContent = DAILY_WORD;
 
   // 入力欄生成
   const inputs = [];
@@ -454,7 +450,7 @@ setInterval(()=>{
   const d = new Date();
   clockEl.textContent =
     `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}, 250);
+}, 100);
 
   buildBoard();
 </script>
