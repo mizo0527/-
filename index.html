@@ -82,7 +82,7 @@
       touch-action:manipulation;
     }
   }
-couponBox{
+.couponBox{
   border:2px dashed #111;
   border-radius:16px;
   padding:16px;
@@ -93,6 +93,28 @@ couponBox{
 @keyframes breathe{
   0%,100%{ transform: scale(1); }
   50%{ transform: scale(1.01); }
+}
+
+.couponAnim{
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #e9ecf3;
+  border: 1px solid #cfd3da;
+  margin-top: 12px;
+}
+.couponAnim .shine{
+  position:absolute; inset:0;
+  background: linear-gradient(90deg,
+    rgba(0,0,0,0) 0%,
+    rgba(0,0,0,0.25) 45%,
+    rgba(0,0,0,0) 90%);
+  transform: translateX(-100%);
+  animation: slideShine 1.2s linear infinite;
+}
+@keyframes slideShine{
+  to{ transform: translateX(100%); }
 }
 
 /* 動くバー */
@@ -138,19 +160,47 @@ couponBox{
       <span class="small">※このページは通信不要。店内タブレットやスマホでもOK。</span>
     </div>
 
-    <div class="card">
-      <div id="board" class="grid" aria-label="sudoku board"></div>
+<div class="card">
+  <div id="board" class="grid" aria-label="sudoku board"></div>
 
-      <div class="row" style="margin-top:12px">
-        <button id="checkBtn">完成チェック</button>
-        <button id="resetBtn" class="sec">やり直し</button>
-        <button id="hintBtn" class="sec">ヒント（1マス）</button>
-      </div>
+  <div class="row" style="margin-top:12px">
+    <button id="checkBtn">完成チェック</button>
+    <button id="resetBtn" class="sec">やり直し</button>
+    <button id="hintBtn" class="sec">ヒント（1マス）</button>
+  </div>
 
-      <div id="status" class="msg"></div>
+  <div id="status" class="msg"></div>
 
-     <div id="okBox" class="okBox" role="status" aria-live="polite">
+  <div id="okBox" class="okBox" role="status" aria-live="polite">
   <div class="couponBox">
+    <p class="okTitle">🎉 クリア！おつかれさんで！</p>
+
+    <div style="margin-top:10px">
+      衣料品売場のスタッフに<br>
+      <b>この画面</b>を見せてな！よろしくで！
+    </div>
+
+    <div style="margin-top:10px;font-size:18px;font-weight:bold">
+      対象商品 2割引
+    </div>
+
+    <div class="small" style="margin-top:8px">
+      発行日：<b id="issueDate"></b>
+    </div>
+
+    <div class="small">
+      現在時刻：<b id="liveClock"></b>
+    </div>
+
+    <div class="couponAnim"><span class="shine"></span></div>
+
+    <div class="small" style="margin-top:10px">
+      ※原則当日限定（スクショは翌日まで対応）
+    </div>
+  </div>
+</div>
+
+
 
     <p class="okTitle">🎉 クリア！おつかれさんで！</p>
 
@@ -391,7 +441,7 @@ couponBox{
     statusEl.textContent = "ヒント入れたで（1マス）。";
     okBoxEl.style.display = "none";
   });
-  // 日付表示
+ // 日付表示
 const issueDateEl = document.getElementById("issueDate");
 const now = new Date();
 issueDateEl.textContent = now.toLocaleDateString();
