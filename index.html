@@ -19,7 +19,6 @@
   .sub{color:#444;font-size:13px;line-height:1.6;margin:0}
   .notice{font-size:13px;line-height:1.7;background:#fff7e6;border:1px solid #ffd18a;border-radius:12px;padding:12px}
 
-<style>
 /* 盤面 */
 .grid{
   display:grid;
@@ -244,14 +243,6 @@ input{
   </div>
 
 <script>
- // ランダム認証番号（毎回変わる）
-const randEl = document.getElementById("randNum");
-
-function generateCode(){
-  return Math.floor(100000 + Math.random() * 900000); // 6桁
-}
-
-randEl.textContent = generateCode();
 
   // ===== サンプル問題（0は空欄） =====
   // これは例。自分の問題に差し替えOK。
@@ -327,10 +318,10 @@ function stopAuthRefresh(){
         cell.className = "cell";
 
         // 太枠（安定版）
-　　　　if (c % 3 === 0) cell.classList.add("thickL");
-　　　　if (c % 3 === 2) cell.classList.add("thickR");
-　　　　if (r % 3 === 0) cell.classList.add("thickT");
-　　　　if (r % 3 === 2) cell.classList.add("thickB");
+        if (c % 3 === 0) cell.classList.add("thickL");
+        if (c % 3 === 2) cell.classList.add("thickR");
+        if (r % 3 === 0) cell.classList.add("thickT");
+        if (r % 3 === 2) cell.classList.add("thickB");
         
 
         const inp = document.createElement("input");
