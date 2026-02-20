@@ -21,22 +21,29 @@
 
   /* 盤面 */
   .grid{
-    display:grid;
-    grid-template-columns:repeat(9,1fr);
-    gap:0;
-    width:100%;
-    max-width:100%;
-    margin:0 auto;
-  }
+  display:grid;
+  grid-template-columns:repeat(9,1fr);
+  width:100%;
+  max-width:100%;
+  margin:0 auto;
+}
+
 
   #board{
-  border:3px solid #111;
+  outline:3px solid #111;
+  outline-offset:-3px;
 }
 
   .cell{
+  aspect-ratio:1/1;
   border:1px solid #cfd3da;
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
+/* 3×3の太線 */
 .cell.thickL{border-left:3px solid #111}
 .cell.thickR{border-right:3px solid #111}
 .cell.thickT{border-top:3px solid #111}
