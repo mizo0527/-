@@ -193,7 +193,36 @@
 
   <div id="okBox" class="okBox" role="status" aria-live="polite">
   <div class="couponBox">
+<p class="okTitle">🎉 クリア！おつかれさんで！</p>
 
+    <div style="margin-top:10px">
+      衣料品売場のスタッフに<br>
+      <b>この画面</b>を見せてな！よろしくで！
+    </div>
+
+    <div style="margin-top:10px;font-size:18px;font-weight:bold">
+      対象商品 2割引
+    </div>
+
+    <!-- ★ここに入れる -->
+    <div class="small">
+      認証番号：<b id="randNum"></b>
+    </div>
+
+    <div class="small">
+      発行日：<b id="issueDate"></b>
+    </div>
+
+    <div class="small">
+      現在時刻：<b id="liveClock"></b>
+    </div>
+
+    <div class="couponAnim"><span class="shine"></span></div>
+
+    <div class="small" style="margin-top:10px">
+      ※原則当日限定（スクショは翌日まで対応）
+    </div>
+    
   </div>
 </div>
 
@@ -207,8 +236,14 @@
   </div>
 
 <script>
-  // ===== ここだけ毎日変える（おすすめ） =====
-  const DAILY_WORD = "Otsukare-2026-02-10"; // ←日付を変えるだけでOK
+ // ランダム認証番号（毎回変わる）
+const randEl = document.getElementById("randNum");
+
+function generateCode(){
+  return Math.floor(100000 + Math.random() * 900000); // 6桁
+}
+
+randEl.textContent = generateCode();
 
   // ===== サンプル問題（0は空欄） =====
   // これは例。自分の問題に差し替えOK。
