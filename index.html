@@ -287,6 +287,32 @@ randEl.textContent = generateCode();
   const boardEl = document.getElementById("board");
   const statusEl = document.getElementById("status");
   const okBoxEl = document.getElementById("okBox");
+  // ===== 認証番号：クリア時に発行＆10秒更新 =====
+const randEl = document.getElementById("randNum");
+let authTimer = null;
+
+function generateCode(){
+  return Math.floor(100000 + Math.random() * 900000); // 6桁
+}
+
+function startAuthRefresh(){
+  if(!randEl) return;
+  randEl.textContent = generateCode(); // まず即発行
+  stopAuthRefresh(); // 二重タイマー防止
+  authTimer = setInterval(()=>{
+    // okBoxが表示中だけ更新
+    if(okBoxEl && okBoxEl.style.display === "block"){
+      randEl.textContent = generateCode();
+    }
+  }, 10000); // 10秒
+}
+
+function stopAuthRefresh(){
+  if(authTimer){
+    clearInterval(authTimer);
+    authTimer = null;
+  }
+}
 
   // 入力欄生成
   const inputs = [];
@@ -403,6 +429,7 @@ randEl.textContent = generateCode();
       statusEl.textContent = "";
       okBoxEl.style.display = "block";
       // 画面上部へ軽くスクロール（スマホで見せやすい）
+      startAuthRefresh(); // ←追加
       okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
     } else {
       statusEl.textContent = "どこか違うみたいや。赤マス出てない場合は見落としやから、もう一回見直し！";
@@ -411,6 +438,7 @@ randEl.textContent = generateCode();
   });
 
   document.getElementById("resetBtn").addEventListener("click", ()=>{
+      stopAuthRefresh(); // ←ここ
     for(let r=0;r<9;r++){
       for(let c=0;c<9;c++){
         const inp = inputs[r][c];
