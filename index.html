@@ -29,6 +29,10 @@
     margin:0 auto;
   }
 
+  #board{
+  border:3px solid #111;
+}
+  
   .cell{
     width:100%;
     aspect-ratio:1/1;
@@ -173,32 +177,6 @@
 
   <div id="okBox" class="okBox" role="status" aria-live="polite">
   <div class="couponBox">
-    <p class="okTitle">🎉 クリア！おつかれさんで！</p>
-
-    <div style="margin-top:10px">
-      衣料品売場のスタッフに<br>
-      <b>この画面</b>を見せてな！よろしくで！
-    </div>
-
-    <div style="margin-top:10px;font-size:18px;font-weight:bold">
-      対象商品 2割引
-    </div>
-
-    <div class="small" style="margin-top:8px">
-      発行日：<b id="issueDate"></b>
-    </div>
-
-    <div class="small">
-      現在時刻：<b id="liveClock"></b>
-    </div>
-
-    <div class="couponAnim"><span class="shine"></span></div>
-
-    <div class="small" style="margin-top:10px">
-      ※原則当日限定（スクショは翌日まで対応）
-    </div>
-  </div>
-</div>
 
     <p class="okTitle">🎉 クリア！おつかれさんで！</p>
 
@@ -293,11 +271,12 @@
         const cell = document.createElement("div");
         cell.className = "cell";
 
-        // 太枠
-        if (c % 3 === 0) cell.classList.add("thickL");
-        if (c === 8) cell.classList.add("thickR");
-        if (r % 3 === 0) cell.classList.add("thickT");
-        if (r === 8) cell.classList.add("thickB");
+        // 太枠（安定版）
+　　　　if (c % 3 === 0) cell.classList.add("thickL");
+　　　　if (c % 3 === 2) cell.classList.add("thickR");
+　　　　if (r % 3 === 0) cell.classList.add("thickT");
+　　　　if (r % 3 === 2) cell.classList.add("thickB");
+        
 
         const inp = document.createElement("input");
         inp.setAttribute("inputmode","numeric");
