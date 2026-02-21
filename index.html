@@ -19,41 +19,91 @@
   .sub{color:#444;font-size:13px;line-height:1.6;margin:0}
   .notice{font-size:13px;line-height:1.7;background:#fff7e6;border:1px solid #ffd18a;border-radius:12px;padding:12px}
 
-/* 盤面 */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(9,1fr);
-  gap:0;
-  width:100%;
-  max-width:100%;
-  margin:0 auto;
-  border:3px solid #111;      /* ←外枠はborderが安定 */
-}
+  /* 盤面 */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(9,1fr);
+    gap:0;
+    width:100%;
+    max-width:100%;
+    margin:0 auto;
+    border:3px solid #111;
+  }
+  .cell{
+    width:100%;
+    aspect-ratio:1/1;
+    background:#fff;
+    border:1px solid #cfd3da;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .cell.thickL{ border-left:3px solid #111; }
+  .cell.thickR{ border-right:3px solid #111; }
+  .cell.thickT{ border-top:3px solid #111; }
+  .cell.thickB{ border-bottom:3px solid #111; }
 
-.cell{
-  width:100%;
-  aspect-ratio:1/1;
-  background:#fff;
-  border:1px solid #cfd3da;   /* ←薄い線 */
-  min-width:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+  input{
+    width:100%;height:100%;
+    border:0;outline:none;
+    text-align:center;
+    font-size:18px;
+    background:transparent;
+  }
+  input.given{font-weight:700;color:#111}
+  input.err{background:#ffe7e7}
 
-/* 3×3の太線（これが効く） */
-.cell.thickL{ border-left:3px solid #111; }
-.cell.thickR{ border-right:3px solid #111; }
-.cell.thickT{ border-top:3px solid #111; }
-.cell.thickB{ border-bottom:3px solid #111; }
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  button{border:0;border-radius:12px;padding:10px 14px;background:#111;color:#fff;font-weight:700;cursor:pointer}
+  button.sec{background:#e9ecf3;color:#111}
+  .row button{ flex:1 1 140px; min-width:140px; }
+  .msg{font-size:14px;line-height:1.7;margin-top:10px}
 
-input{
-  width:100%;height:100%;
-  border:0;outline:none;
-  text-align:center;
-  font-size:18px;
-  background:transparent;
-}
+  .okBox{display:none;background:#eaffea;border:1px solid #9be39b;border-radius:14px;padding:14px;margin-top:12px}
+  .okTitle{font-size:18px;font-weight:900;margin:0 0 6px}
+  .small{font-size:12px;color:#444}
+
+  .couponBox{
+    border:2px dashed #111;
+    border-radius:16px;
+    padding:16px;
+    text-align:center;
+    animation:breathe 1.6s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.01); }
+  }
+
+  .couponAnim{
+    position:relative;
+    height:10px;
+    border-radius:999px;
+    overflow:hidden;
+    background:#e9ecf3;
+    border:1px solid #cfd3da;
+    margin-top:12px;
+  }
+  .couponAnim .shine{
+    position:absolute; inset:0;
+    background:linear-gradient(90deg,
+      rgba(0,0,0,0) 0%,
+      rgba(0,0,0,0.25) 45%,
+      rgba(0,0,0,0) 90%);
+    transform:translateX(-100%);
+    animation:slideShine 1.2s linear infinite;
+  }
+  @keyframes slideShine{ to{ transform:translateX(100%); } }
+
+  @media (max-width:520px){
+    .wrap{max-width:100%;padding:10px}
+    h1{font-size:18px}
+    .card{padding:12px}
+    button{font-size:16px;padding:12px}
+    input{font-size:20px;font-weight:600;}
+    .grid{touch-action:manipulation;}
+  }
 </style>
   
   .cell{
