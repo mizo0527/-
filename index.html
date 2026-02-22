@@ -368,40 +368,43 @@ function stopAuthRefresh(){
 
   // ボタン
   document.getElementById("checkBtn").addEventListener("click", ()=>{
-    const user = getUserGrid();
 
-    if(!isComplete(user)){
-      statusEl.textContent = "まだ空欄があるで。全部埋めてからチェックしてな。";
-      okBoxEl.style.display = "none";
-      return;
-    }
+  const user = getUserGrid();
 
-    const hasErr = markErrors(user);
-    if(hasErr){
-      statusEl.textContent = "惜しい！赤いマスが間違いの可能性高いで。そこ直してみて。";
-      okBoxEl.style.display = "none";
-      return;
-    }
-
-   if(isSolved(user)){
-
-  const count = addCount(); // ←ここ追加
-
-  if(count > LIMIT){
-    showLimitMessage(count);
+  if(!isComplete(user)){
+    statusEl.textContent = "まだ空欄があるで。全部埋めてからチェックしてな。";
+    okBoxEl.style.display = "none";
     return;
   }
 
-  statusEl.textContent = "";
-  okBoxEl.style.display = "block";
-  startAuthRefresh();
-  okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
+  const hasErr = markErrors(user);
+  if(hasErr){
+    statusEl.textContent = "惜しい！赤いマスが間違いの可能性高いで。そこ直してみて。";
+    okBoxEl.style.display = "none";
+    return;
+  }
 
-} else {
-  statusEl.textContent = "どこか違うみたいや。赤マス出てない場合は見落としやから、もう一回見直し！";
-  okBoxEl.style.display = "none";
-}
+  if(isSolved(user)){
 
+    const count = addCount();
+
+    if(count > LIMIT){
+      showLimitMessage(count);
+      return;
+    }
+
+    statusEl.textContent = "";
+    okBoxEl.style.display = "block";
+    startAuthRefresh();
+    okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
+
+  } else {
+    statusEl.textContent = "どこか違うみたいや。赤マス出てない場合は見落としやから、もう一回見直し！";
+    okBoxEl.style.display = "none";
+  }
+
+}); // ←★ここで閉じる！！！
+  
   document.getElementById("resetBtn").addEventListener("click", ()=>{
       stopAuthRefresh(); // ←ここ
     for(let r=0;r<9;r++){
