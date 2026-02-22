@@ -216,6 +216,35 @@
   const boardEl = document.getElementById("board");
   const statusEl = document.getElementById("status");
   const okBoxEl = document.getElementById("okBox");
+const LIMIT = 3;
+const KEY = "sudokuClearCount";
+
+function getCount(){
+  return parseInt(localStorage.getItem(KEY) || "0", 10);
+}
+
+function addCount(){
+  const c = getCount() + 1;
+  localStorage.setItem(KEY, c);
+  return c;
+}
+
+function showLimitMessage(c){
+  okBoxEl.style.display = "block";
+  okBoxEl.innerHTML = `
+    <div class="couponBox">
+      <p class="okTitle">⚠️ 本日のご利用上限です</p>
+      <div style="margin-top:10px">
+        この端末は<strong>${c}回</strong>クリア済み。<br>
+        これ以上は往生しまっせ〜、また機会あればよろしくで！
+      </div>
+      <div class="small" style="margin-top:10px">
+        ※ご不明な場合はスタッフまで
+      </div>
+    </div>
+  `;
+}
+  
   // ===== 認証番号：クリア時に発行＆10秒更新 =====
 const randEl = document.getElementById("randNum");
 let authTimer = null;
@@ -354,17 +383,24 @@ function stopAuthRefresh(){
       return;
     }
 
-    if(isSolved(user)){
-      statusEl.textContent = "";
-      okBoxEl.style.display = "block";
-      // 画面上部へ軽くスクロール（スマホで見せやすい）
-      startAuthRefresh(); // ←追加
-      okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
-    } else {
-      statusEl.textContent = "どこか違うみたいや。赤マス出てない場合は見落としやから、もう一回見直し！";
-      okBoxEl.style.display = "none";
-    }
-  });
+   if(isSolved(user)){
+
+  const count = addCount(); // ←ここ追加
+
+  if(count > LIMIT){
+    showLimitMessage(count);
+    return;
+  }
+
+  statusEl.textContent = "";
+  okBoxEl.style.display = "block";
+  startAuthRefresh();
+  okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
+
+} else {
+  statusEl.textContent = "どこか違うみたいや。赤マス出てない場合は見落としやから、もう一回見直し！";
+  okBoxEl.style.display = "none";
+}
 
   document.getElementById("resetBtn").addEventListener("click", ()=>{
       stopAuthRefresh(); // ←ここ
