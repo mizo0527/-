@@ -162,7 +162,14 @@
     <div class="small">
       現在時刻：<b id="liveClock"></b>
     </div>
-
+<div style="margin-top:10px">
+  <div class="small">▶ スライドしてクーポン有効</div>
+  <input type="range" id="unlockSlider" min="0" max="100" value="0" style="width:100%">
+  <div id="unlockMsg" class="small" style="margin-top:6px;color:#888">
+    スライドで有効化してな
+  </div>
+</div>
+    
     <div class="couponAnim"><span class="shine"></span></div>
 
     <div class="small" style="margin-top:10px">
@@ -173,6 +180,8 @@
 
     <div class="card">
   <div class="small">
+ </div> <!-- ← 盤面カードの閉じ -->
+      
     注意事項：<br/>
     ・ナンプレは1日3回まで（1端末あたり）<br/>
     ・割引クーポン表示は15分以内<br/>
@@ -603,37 +612,6 @@ document.getElementById("hintBtn").addEventListener("click", ()=>{
   stopAllTimers();
 });
 
-// =====================
-// 起動
-// =====================
-setupDateClock();
-buildBoard();
-  
- // 日付表示
-const issueDateEl = document.getElementById("issueDate");
-const now = new Date();
-issueDateEl.textContent = now.toLocaleDateString();
-
-  function getDayCode(){
-  const d = new Date();
-  const patterns = ["A","B","C","D","E","F"];
-  const idx = (d.getFullYear() + d.getMonth() + d.getDate()) % patterns.length;
-  return patterns[idx];
-}
-
-document.getElementById("dayCode").textContent = getDayCode();
-
-// 動く時計
-const clockEl = document.getElementById("liveClock");
-function pad(n){ return String(n).padStart(2,"0"); }
-
-setInterval(()=>{
-  const d = new Date();
-  clockEl.textContent =
-    `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}, 100);
-
-  buildBoard();
 </script>
 </body>
 </html>
