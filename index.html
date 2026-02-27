@@ -248,6 +248,18 @@ let clockEl     = document.getElementById("liveClock");
 
 let slider = null;
 let unlockMsg = null;
+let clockTimer = null;
+
+function setupDateClock(){
+
+  if(clockTimer){
+    clearInterval(clockTimer);
+  }
+
+  clockTimer = setInterval(()=>{
+    // 時計更新
+  }, 200);
+}
 
 const okBoxTemplate = okBoxEl.innerHTML; // ★上限表示で書き換えても戻せる
 
@@ -333,12 +345,15 @@ function setupDateClock(){
   const idx = (now.getFullYear() + now.getMonth() + now.getDate()) % patterns.length;
   dayCodeEl.textContent = patterns[idx];
 
-  setInterval(()=>{
+  // ★追加：前のタイマー止める
+  if(clockTimer) clearInterval(clockTimer);
+
+  clockTimer = setInterval(()=>{
     const d = new Date();
     clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }, 200);
 }
-
+  
 /* =====================
    スライドUI
 ===================== */
@@ -352,21 +367,31 @@ function initSlider(){
   unlockMsg.textContent = "スライドで有効化してな";
   unlockMsg.style.color = "#888";
 
-  slider.oninput = () => {
-    if(String(slider.value) === "100"){
-      slider.disabled = true; // 1回有効化したら固定
-      unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
-      unlockMsg.style.color = "green";
-      startActiveTimeout();
-    }
-  };
+ slider.oninput = () => {
+  if(String(slider.value) === "100"){
+    slider.disabled = true;
+
+    const count = addCount(); // ★ここで加算
+
+    unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
+    unlockMsg.style.color = "green";
+
+    startActiveTimeout();
+  }
+};
 }
 
 /* =====================
    上限表示（okBoxの中身を書き換える）
 ===================== */
 function showLimitMessage(c){
+
   stopAllTimers();
+
+  // ▼ サブメッセージ（下に出る）
+  statusEl.textContent = "今日はもう3回やで〜、また明日な！";
+
+  // ▼ メイン表示（ドーンと見せる）
   okBoxEl.style.display = "block";
   okBoxEl.innerHTML = `
     <div class="couponBox">
@@ -380,9 +405,9 @@ function showLimitMessage(c){
       </div>
     </div>
   `;
- okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
-} //
 
+  okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
+}
 /* =====================
    クーポン表示（テンプレを戻してから初期化）
 ===================== */
@@ -513,13 +538,13 @@ document.getElementById("checkBtn").addEventListener("click", ()=>{
   }
 
   if(isSolved(user)){
-    const count = addCount();
-    if(count > LIMIT){
-      showLimitMessage(count);
-      return;
-    }
-    showCoupon();
-  }else{
+  const count = getCount(); // ←変更
+  if(count >= LIMIT){
+    showLimitMessage(count);
+    return;
+  }
+  showCoupon();
+}else{
     statusEl.textContent = "どこか違うみたいや。もう一回見直し！";
     okBoxEl.style.display = "none";
     stopAllTimers();
