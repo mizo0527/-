@@ -248,18 +248,6 @@ let clockEl     = document.getElementById("liveClock");
 
 let slider = null;
 let unlockMsg = null;
-let clockTimer = null;
-
-function setupDateClock(){
-
-  if(clockTimer){
-    clearInterval(clockTimer);
-  }
-
-  clockTimer = setInterval(()=>{
-    // 時計更新
-  }, 200);
-}
 
 const okBoxTemplate = okBoxEl.innerHTML; // ★上限表示で書き換えても戻せる
 
@@ -346,8 +334,8 @@ function setupDateClock(){
   dayCodeEl.textContent = patterns[idx];
 
   // ★追加：前のタイマー止める
-  if(clockTimer) clearInterval(clockTimer);
-
+  if(clockTimer){ clearInterval(clockTimer); clockTimer = null; }
+  
   clockTimer = setInterval(()=>{
     const d = new Date();
     clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
@@ -369,9 +357,15 @@ function initSlider(){
 
  slider.oninput = () => {
   if(String(slider.value) === "100"){
+    const countNow = getCount();
+    if(countNow >= LIMIT){
+      showLimitMessage(countNow);
+      return;
+    }
+
     slider.disabled = true;
 
-    const count = addCount(); // ★ここで加算
+    addCount(); // ★ここで加算（上限OKの時だけ）
 
     unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
     unlockMsg.style.color = "green";
@@ -379,7 +373,6 @@ function initSlider(){
     startActiveTimeout();
   }
 };
-}
 
 /* =====================
    上限表示（okBoxの中身を書き換える）
