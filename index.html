@@ -241,10 +241,10 @@ const boardEl = document.getElementById("board");
 const statusEl = document.getElementById("status");
 const okBoxEl  = document.getElementById("okBox");
 
-const randEl      = document.getElementById("randNum");
-const issueDateEl = document.getElementById("issueDate");
-const dayCodeEl   = document.getElementById("dayCode");
-const clockEl     = document.getElementById("liveClock");
+let randEl      = document.getElementById("randNum");
+let issueDateEl = document.getElementById("issueDate");
+let dayCodeEl   = document.getElementById("dayCode");
+let clockEl     = document.getElementById("liveClock");
 
 let slider = null;
 let unlockMsg = null;
@@ -386,19 +386,23 @@ function showLimitMessage(c){
 /* =====================
    クーポン表示（テンプレを戻してから初期化）
 ===================== */
-function showCoupon(){
-  statusEl.textContent = "";
-  okBoxEl.innerHTML = okBoxTemplate; // ★元に戻す
-  okBoxEl.style.display = "block";
+okBoxEl.style.display = "block";
 
-  // DOMが戻ったので、再取得して初期化
+  // ★ここ重要：中身を書き換えたらDOM参照取り直し
+  randEl      = document.getElementById("randNum");
+  issueDateEl = document.getElementById("issueDate");
+  dayCodeEl   = document.getElementById("dayCode");
+  clockEl     = document.getElementById("liveClock");
+
+  // 日付・時計もここで再セット（showCoupon時にも正しく表示）
+  setupDateClock();
+
   startAuthRefresh();
   startShowTimeout();
   initSlider();
 
   okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
 }
-
 /* =====================
    盤面
 ===================== */
