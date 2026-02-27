@@ -386,7 +386,9 @@ function showLimitMessage(c){
 /* =====================
    クーポン表示（テンプレを戻してから初期化）
 ===================== */
-okBoxEl.style.display = "block";
+function showCoupon() {
+  okBoxEl.innerHTML = okBoxTemplate;
+  okBoxEl.style.display = "block";
 
   // ★ここ重要：中身を書き換えたらDOM参照取り直し
   randEl      = document.getElementById("randNum");
