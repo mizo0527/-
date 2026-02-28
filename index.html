@@ -279,7 +279,8 @@ function addCount(){
 let authTimer = null;
 let showTimeoutTimer = null;
 let activeTimeoutTimer = null;
-
+let clockTimer = null; // ←ここ追加（時計のsetInterval管理）
+  
 function stopAllTimers(){
   if(authTimer){ clearInterval(authTimer); authTimer = null; }
   if(showTimeoutTimer){ clearTimeout(showTimeoutTimer); showTimeoutTimer = null; }
@@ -334,7 +335,8 @@ function setupDateClock(){
   dayCodeEl.textContent = patterns[idx];
 
   // ★追加：前のタイマー止める
-  if(clockTimer){ clearInterval(clockTimer); clockTimer = null; }
+ if(clockTimer){ clearInterval(clockTimer); clockTimer = null; }
+clockTimer = setInterval(()=>{ ... }, 200);
   
   clockTimer = setInterval(()=>{
     const d = new Date();
@@ -355,24 +357,33 @@ function initSlider(){
   unlockMsg.textContent = "スライドで有効化してな";
   unlockMsg.style.color = "#888";
 
- slider.oninput = () => {
-  if(String(slider.value) === "100"){
-    const countNow = getCount();
-    if(countNow >= LIMIT){
-      showLimitMessage(countNow);
-      return;
+function initSlider(){
+  slider = document.getElementById("unlockSlider");
+  unlockMsg = document.getElementById("unlockMsg");
+  if(!slider || !unlockMsg) return;
+
+  slider.value = 0;
+  slider.disabled = false;
+  unlockMsg.textContent = "スライドで有効化してな";
+  unlockMsg.style.color = "#888";
+
+  slider.oninput = () => {
+    if(String(slider.value) === "100"){
+      const countNow = getCount();
+      if(countNow >= LIMIT){
+        showLimitMessage(countNow);
+        return;
+      }
+
+      slider.disabled = true;
+      addCount(); // ←上限OKの時だけ加算
+
+      unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
+      unlockMsg.style.color = "green";
+      startActiveTimeout();
     }
-
-    slider.disabled = true;
-
-    addCount(); // ★ここで加算（上限OKの時だけ）
-
-    unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
-    unlockMsg.style.color = "green";
-
-    startActiveTimeout();
-  }
-};
+  };
+} // ←★これが抜けてると後ろ全部バグる
 
 /* =====================
    上限表示（okBoxの中身を書き換える）
