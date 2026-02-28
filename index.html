@@ -373,10 +373,10 @@ function initSlider(){
       const countNow = getCount();
       if(countNow >= LIMIT){
         showLimitMessage(countNow);
-        slider.value = 0;
+        slider.value = 0;          // ←好みで戻す
         return;
       }
-if(slider){ slider.value = 0; slider.disabled = false; }
+
       slider.disabled = true;
       addCount();
 
@@ -386,34 +386,24 @@ if(slider){ slider.value = 0; slider.disabled = false; }
     }
   };
 }
-
 /* =====================
    上限表示（okBoxの中身を書き換える）
 ===================== */
 function showLimitMessage(c){
   stopAllTimers();
-
-  // ④：下のメッセージ（status）
   statusEl.textContent = "今日はもう3回やわ〜、また明日よろしくで！";
 
-  // ③：okBox を上限表示に差し替え（でっかく表示）
   okBoxEl.style.display = "block";
-  okBoxEl.innerHTML = `
-    <div class="couponBox">
-      <p class="okTitle">⚠️ 本日のご利用上限です</p>
-      <div style="margin-top:10px">
-        この端末は<strong>${c}回</strong>クリア済み。<br>
-        これ以上は往生しまっせ〜、また機会あればよろしくで！
-      </div>
-      <div class="small" style="margin-top:10px">
-        ※ご不明な場合はスタッフまで
-      </div>
-    </div>
-  `;
+  okBoxEl.innerHTML = `...`;
+
+  // ★ここ（修正③の置き場）
+  if(slider){
+    slider.value = 0;
+    slider.disabled = false;
+  }
 
   okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
 }
-
 
 /* =====================
    クーポン表示（テンプレを戻してから初期化）
