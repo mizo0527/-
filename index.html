@@ -285,6 +285,7 @@ function stopAllTimers(){
   if(authTimer){ clearInterval(authTimer); authTimer = null; }
   if(showTimeoutTimer){ clearTimeout(showTimeoutTimer); showTimeoutTimer = null; }
   if(activeTimeoutTimer){ clearTimeout(activeTimeoutTimer); activeTimeoutTimer = null; }
+  if(clockTimer){ clearInterval(clockTimer); clockTimer = null; } // ←追加
 }
 
 function generateCode(){
