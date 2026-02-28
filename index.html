@@ -373,12 +373,12 @@ function initSlider(){
       const countNow = getCount();
       if(countNow >= LIMIT){
         showLimitMessage(countNow);
-        slider.value = 0;          // ついでに戻し（好みで）
+        slider.value = 0;
         return;
       }
-
+if(slider){ slider.value = 0; slider.disabled = false; }
       slider.disabled = true;
-      addCount();                  // ★上限OKの時だけ加算
+      addCount();
 
       unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
       unlockMsg.style.color = "green";
