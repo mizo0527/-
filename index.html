@@ -369,14 +369,12 @@ function initSlider(){
 
   slider.oninput = () => {
     if(String(slider.value) === "100"){
-      const countNow = getCount();
-      if(countNow >= LIMIT){
-        showLimitMessage(countNow);
-        return;
-      }
-
-      slider.disabled = true;
-      addCount(); // ←上限OKの時だけ加算
+     const countNow = getCount();
+if(countNow >= LIMIT){
+  showLimitMessage(countNow);
+  return;
+}
+addCount();
 
       unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
       unlockMsg.style.color = "green";
@@ -389,13 +387,12 @@ function initSlider(){
    上限表示（okBoxの中身を書き換える）
 ===================== */
 function showLimitMessage(c){
-
   stopAllTimers();
 
-  // ▼ サブメッセージ（下に出る）
-  statusEl.textContent = "今日はもう3回やで〜、また明日な！";
+  // ④：下のメッセージ（status）
+  statusEl.textContent = "今日はもう3回やわ〜、また明日よろしくで！";
 
-  // ▼ メイン表示（ドーンと見せる）
+  // ③：okBox を上限表示に差し替え（でっかく表示）
   okBoxEl.style.display = "block";
   okBoxEl.innerHTML = `
     <div class="couponBox">
@@ -412,28 +409,32 @@ function showLimitMessage(c){
 
   okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
 }
+
+  okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
+}
 /* =====================
    クーポン表示（テンプレを戻してから初期化）
 ===================== */
-function showCoupon() {
+function showCoupon(){
+  statusEl.textContent = "";
+
+  // ⑦：上限表示で書き換えた okBox を、元のクーポンUIに戻す
   okBoxEl.innerHTML = okBoxTemplate;
   okBoxEl.style.display = "block";
 
-  // ★ここ重要：中身を書き換えたらDOM参照取り直し
+  // ★DOM取り直し（これもセットで）
   randEl      = document.getElementById("randNum");
   issueDateEl = document.getElementById("issueDate");
   dayCodeEl   = document.getElementById("dayCode");
   clockEl     = document.getElementById("liveClock");
 
-  // 日付・時計もここで再セット（showCoupon時にも正しく表示）
   setupDateClock();
-
   startAuthRefresh();
   startShowTimeout();
   initSlider();
 
   okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
-} //
+}
 /* =====================
    盤面
 ===================== */
@@ -542,7 +543,7 @@ document.getElementById("checkBtn").addEventListener("click", ()=>{
   }
 
   if(isSolved(user)){
-  const count = getCount(); // ←変更
+  const count = getCount();
   if(count >= LIMIT){
     showLimitMessage(count);
     return;
