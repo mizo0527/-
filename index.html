@@ -336,7 +336,7 @@ function setupDateClock(){
 
   // ★追加：前のタイマー止める
  if(clockTimer){ clearInterval(clockTimer); clockTimer = null; }
-clockTimer = setInterval(()=>{ ... }, 200);
+
   
   clockTimer = setInterval(()=>{
     const d = new Date();
@@ -369,19 +369,22 @@ function initSlider(){
 
   slider.oninput = () => {
     if(String(slider.value) === "100"){
-     const countNow = getCount();
-if(countNow >= LIMIT){
-  showLimitMessage(countNow);
-  return;
-}
-addCount();
+      const countNow = getCount();
+      if(countNow >= LIMIT){
+        showLimitMessage(countNow);
+        slider.value = 0;          // ついでに戻し（好みで）
+        return;
+      }
+
+      slider.disabled = true;
+      addCount();                  // ★上限OKの時だけ加算
 
       unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
       unlockMsg.style.color = "green";
       startActiveTimeout();
     }
   };
-} // ←★これが抜けてると後ろ全部バグる
+}
 
 /* =====================
    上限表示（okBoxの中身を書き換える）
@@ -410,8 +413,7 @@ function showLimitMessage(c){
   okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
 }
 
-  okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
-}
+
 /* =====================
    クーポン表示（テンプレを戻してから初期化）
 ===================== */
