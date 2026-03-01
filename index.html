@@ -377,7 +377,10 @@ function initSlider(){
     const countNow = getCount();
     if(countNow >= LIMIT){
       showLimitMessage(countNow);
+
+      // 上限の時は戻す（好み）
       slider.value = 0;
+      slider.disabled = false;
       return;
     }
 
@@ -388,7 +391,7 @@ function initSlider(){
     unlockMsg.style.color = "green";
     startActiveTimeout();
   };
-} // ← ここでしっかり閉じる
+}
 /* =====================
    上限表示（okBoxの中身を書き換える）
 ===================== */
@@ -397,7 +400,18 @@ function showLimitMessage(c){
   statusEl.textContent = "今日はもう3回やわ〜、また明日よろしくで！";
 
   okBoxEl.style.display = "block";
-  okBoxEl.innerHTML = `...`;
+  okBoxEl.innerHTML = `
+    <div class="couponBox">
+      <p class="okTitle">⚠️ 本日のご利用上限です</p>
+      <div style="margin-top:10px">
+        この端末は <b>${c}回</b> クリア済みやで。<br>
+        また明日よろしくで！
+      </div>
+      <div class="small" style="margin-top:10px">
+        ※わからんかったらスタッフまで
+      </div>
+    </div>
+  `;
 
   okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
 }
