@@ -4,6 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ナンプレ挑戦｜衣料品売場限定</title>
+
+  <!-- favicon 404 を黙らせる -->
+  <link rel="icon" href="data:,">
+
 <style>
   *{ box-sizing:border-box; }
   html, body{ margin:0; padding:0; overflow-x:hidden; }
@@ -194,396 +198,416 @@
   </div>
 
 <script>
-/* =====================
-   設定（ここだけ触ればOK）
-===================== */
-const LIMIT = 3;                     // 1日3回まで（端末ローカル）
-const KEY_PREFIX = "sudokuClearCount";
-const COUPON_SHOW_TIMEOUT_MIN = 15;  // 表示から15分で消える
-const COUPON_ACTIVE_TIMEOUT_MIN = 5; // スライド有効化後5分で失効（プロ仕様）
-const AUTH_REFRESH_SEC = 10;         // 認証番号更新（秒）
+(() => {
+  "use strict";
 
-/* =====================
-   問題・解答（ここ差し替えOK）
-===================== */
-const puzzle = [
-  [0,0,0, 2,6,0, 7,0,1],
-  [6,8,0, 0,7,0, 0,9,0],
-  [1,9,0, 0,0,4, 5,0,0],
+  /* =====================
+     設定（ここだけ触ればOK）
+  ===================== */
+  const LIMIT = 3;                     // 1日3回まで（端末ローカル）
+  const KEY_PREFIX = "sudokuClearCount";
+  const COUPON_SHOW_TIMEOUT_MIN = 15;  // 表示から15分で消える
+  const COUPON_ACTIVE_TIMEOUT_MIN = 5; // スライド有効化後5分で失効
+  const AUTH_REFRESH_SEC = 10;         // 認証番号更新（秒）
 
-  [8,2,0, 1,0,0, 0,4,0],
-  [0,0,4, 6,0,2, 9,0,0],
-  [0,5,0, 0,0,3, 0,2,8],
+  /* =====================
+     問題・解答（ここ差し替えOK）
+  ===================== */
+  const puzzle = [
+    [0,0,0, 2,6,0, 7,0,1],
+    [6,8,0, 0,7,0, 0,9,0],
+    [1,9,0, 0,0,4, 5,0,0],
 
-  [0,0,9, 3,0,0, 0,7,4],
-  [0,4,0, 0,5,0, 0,3,6],
-  [7,0,3, 0,1,8, 0,0,0]
-];
+    [8,2,0, 1,0,0, 0,4,0],
+    [0,0,4, 6,0,2, 9,0,0],
+    [0,5,0, 0,0,3, 0,2,8],
 
-const solution = [
-  [4,3,5, 2,6,9, 7,8,1],
-  [6,8,2, 5,7,1, 4,9,3],
-  [1,9,7, 8,3,4, 5,6,2],
+    [0,0,9, 3,0,0, 0,7,4],
+    [0,4,0, 0,5,0, 0,3,6],
+    [7,0,3, 0,1,8, 0,0,0]
+  ];
 
-  [8,2,6, 1,9,5, 3,4,7],
-  [3,7,4, 6,8,2, 9,1,5],
-  [9,5,1, 7,4,3, 6,2,8],
+  const solution = [
+    [4,3,5, 2,6,9, 7,8,1],
+    [6,8,2, 5,7,1, 4,9,3],
+    [1,9,7, 8,3,4, 5,6,2],
 
-  [5,1,9, 3,2,6, 8,7,4],
-  [2,4,8, 9,5,7, 1,3,6],
-  [7,6,3, 4,1,8, 2,5,9]
-];
+    [8,2,6, 1,9,5, 3,4,7],
+    [3,7,4, 6,8,2, 9,1,5],
+    [9,5,1, 7,4,3, 6,2,8],
 
-/* =====================
-   DOM
-===================== */
-const boardEl = document.getElementById("board");
-const statusEl = document.getElementById("status");
-const okBoxEl  = document.getElementById("okBox");
+    [5,1,9, 3,2,6, 8,7,4],
+    [2,4,8, 9,5,7, 1,3,6],
+    [7,6,3, 4,1,8, 2,5,9]
+  ];
 
-let randEl      = document.getElementById("randNum");
-let issueDateEl = document.getElementById("issueDate");
-let dayCodeEl   = document.getElementById("dayCode");
-let clockEl     = document.getElementById("liveClock");
+  /* =====================
+     DOM
+  ===================== */
+  const boardEl = document.getElementById("board");
+  const statusEl = document.getElementById("status");
+  const okBoxEl  = document.getElementById("okBox");
 
-let slider = null;
-let unlockMsg = null;
+  // これらは showCoupon() で必ず取り直す（okBoxを書き換えるため）
+  let randEl      = document.getElementById("randNum");
+  let issueDateEl = document.getElementById("issueDate");
+  let dayCodeEl   = document.getElementById("dayCode");
+  let clockEl     = document.getElementById("liveClock");
 
-const okBoxTemplate = okBoxEl.innerHTML; // ★上限表示で書き換えても戻せる
+  let slider = null;
+  let unlockMsg = null;
 
-/* =====================
-   日付キー（1日ごとに回数制限を分ける）
-===================== */
-function ymdKey(){
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const day = String(d.getDate()).padStart(2,"0");
-  return `${y}-${m}-${day}`;
-}
-function countKey(){
-  return `${KEY_PREFIX}:${ymdKey()}`;
-}
-function getCount(){
-  return parseInt(localStorage.getItem(countKey()) || "0", 10);
-}
-function addCount(){
-  const c = getCount() + 1;
-  localStorage.setItem(countKey(), String(c));
-  return c;
-}
+  const okBoxTemplate = okBoxEl.innerHTML; // ★上限表示で書き換えても戻せる
 
-/* =====================
-   クーポン：タイマー
-===================== */
-let authTimer = null;
-let showTimeoutTimer = null;
-let activeTimeoutTimer = null;
-let clockTimer = null; // ←ここ追加（時計のsetInterval管理）
-  
-function stopAllTimers(){
-  if(authTimer){ clearInterval(authTimer); authTimer = null; }
-  if(showTimeoutTimer){ clearTimeout(showTimeoutTimer); showTimeoutTimer = null; }
-  if(activeTimeoutTimer){ clearTimeout(activeTimeoutTimer); activeTimeoutTimer = null; }
-  if(clockTimer){ clearInterval(clockTimer); clockTimer = null; } // ←追加
-}
-
-function generateCode(){
-  return Math.floor(100000 + Math.random() * 900000);
-}
-
-function startAuthRefresh(){
-  randEl.textContent = generateCode();
-  if(authTimer) clearInterval(authTimer);
-  authTimer = setInterval(()=>{
-    if(okBoxEl.style.display === "block"){
-      randEl.textContent = generateCode();
-    }
-  }, AUTH_REFRESH_SEC * 1000);
-}
-
-function hideCoupon(msg){
-  stopAllTimers();
-  okBoxEl.style.display = "none";
-  if(msg) statusEl.textContent = msg;
-}
-
-function startShowTimeout(){
-  if(showTimeoutTimer) clearTimeout(showTimeoutTimer);
-  showTimeoutTimer = setTimeout(()=>{
-    hideCoupon("時間切れやで。またチャレンジしてな！");
-  }, COUPON_SHOW_TIMEOUT_MIN * 60 * 1000);
-}
-
-function startActiveTimeout(){
-  if(activeTimeoutTimer) clearTimeout(activeTimeoutTimer);
-  activeTimeoutTimer = setTimeout(()=>{
-    hideCoupon("クーポンの有効時間が切れたで。次またよろしくで！");
-  }, COUPON_ACTIVE_TIMEOUT_MIN * 60 * 1000);
-}
-
-/* =====================
-   日付・時計・本日のコード
-===================== */
-function pad(n){ return String(n).padStart(2,"0"); }
-
-function setupDateClock(){
-  const now = new Date();
-  issueDateEl.textContent = now.toLocaleDateString();
-
-  const patterns = ["A","B","C","D","E","F"];
-  const idx = (now.getFullYear() + now.getMonth() + now.getDate()) % patterns.length;
-  dayCodeEl.textContent = patterns[idx];
-
-  // ★追加：前のタイマー止める
- if(clockTimer){ clearInterval(clockTimer); clockTimer = null; }
-
-  
-  clockTimer = setInterval(()=>{
+  /* =====================
+     日付キー（1日ごとに回数制限を分ける）
+  ===================== */
+  function ymdKey(){
     const d = new Date();
-    clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  }, 200);
-}
-/* =====================
-   スライドUI
-===================== */
-function initSlider(){
-  slider = document.getElementById("unlockSlider");
-  unlockMsg = document.getElementById("unlockMsg");
-  if(!slider || !unlockMsg) return;
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,"0");
+    const day = String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${day}`;
+  }
+  function countKey(){
+    return `${KEY_PREFIX}:${ymdKey()}`;
+  }
+  function getCount(){
+    return parseInt(localStorage.getItem(countKey()) || "0", 10);
+  }
+  function addCount(){
+    const c = getCount() + 1;
+    localStorage.setItem(countKey(), String(c));
+    return c;
+  }
 
-  slider.value = 0;
-  slider.disabled = false;
-  unlockMsg.textContent = "スライドで有効化してな";
-  unlockMsg.style.color = "#888";
+  /* =====================
+     クーポン：タイマー
+  ===================== */
+  let authTimer = null;
+  let showTimeoutTimer = null;
+  let activeTimeoutTimer = null;
+  let clockTimer = null;
 
-  slider.oninput = () => {
-    if(String(slider.value) !== "100") return;
+  function stopAllTimers(){
+    if(authTimer){ clearInterval(authTimer); authTimer = null; }
+    if(showTimeoutTimer){ clearTimeout(showTimeoutTimer); showTimeoutTimer = null; }
+    if(activeTimeoutTimer){ clearTimeout(activeTimeoutTimer); activeTimeoutTimer = null; }
+    if(clockTimer){ clearInterval(clockTimer); clockTimer = null; }
+  }
 
-    const countNow = getCount();
-    if(countNow >= LIMIT){
-      showLimitMessage(countNow);
-      slider.value = 0;
-      slider.disabled = false; // 好みで true でもOK
+  function generateCode(){
+    return Math.floor(100000 + Math.random() * 900000);
+  }
+
+  function startAuthRefresh(){
+    if(!randEl) return;
+    randEl.textContent = generateCode();
+    if(authTimer) clearInterval(authTimer);
+    authTimer = setInterval(()=>{
+      if(okBoxEl.style.display === "block" && randEl){
+        randEl.textContent = generateCode();
+      }
+    }, AUTH_REFRESH_SEC * 1000);
+  }
+
+  function hideCoupon(msg){
+    stopAllTimers();
+    okBoxEl.style.display = "none";
+    if(msg) statusEl.textContent = msg;
+  }
+
+  function startShowTimeout(){
+    if(showTimeoutTimer) clearTimeout(showTimeoutTimer);
+    showTimeoutTimer = setTimeout(()=>{
+      hideCoupon("時間切れやで。またチャレンジしてな！");
+    }, COUPON_SHOW_TIMEOUT_MIN * 60 * 1000);
+  }
+
+  function startActiveTimeout(){
+    if(activeTimeoutTimer) clearTimeout(activeTimeoutTimer);
+    activeTimeoutTimer = setTimeout(()=>{
+      hideCoupon("クーポンの有効時間が切れたで。次またよろしくで！");
+    }, COUPON_ACTIVE_TIMEOUT_MIN * 60 * 1000);
+  }
+
+  /* =====================
+     日付・時計・本日のコード
+  ===================== */
+  function pad(n){ return String(n).padStart(2,"0"); }
+
+  function setupDateClock(){
+    // okBoxがテンプレから差し替えられてる場合、要素が無いことがある
+    if(!issueDateEl || !dayCodeEl || !clockEl) return;
+
+    const now = new Date();
+    issueDateEl.textContent = now.toLocaleDateString();
+
+    const patterns = ["A","B","C","D","E","F"];
+    const idx = (now.getFullYear() + now.getMonth() + now.getDate()) % patterns.length;
+    dayCodeEl.textContent = patterns[idx];
+
+    if(clockTimer){ clearInterval(clockTimer); clockTimer = null; }
+
+    clockTimer = setInterval(()=>{
+      if(!clockEl) return;
+      const d = new Date();
+      clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }, 200);
+  }
+
+  /* =====================
+     スライドUI（100到達で addCount + 5分失効）
+  ===================== */
+  function initSlider(){
+    slider = document.getElementById("unlockSlider");
+    unlockMsg = document.getElementById("unlockMsg");
+    if(!slider || !unlockMsg) return;
+
+    slider.value = 0;
+    slider.disabled = false;
+    unlockMsg.textContent = "スライドで有効化してな";
+    unlockMsg.style.color = "#888";
+
+    // input だけだと「100止め」時に癖が出るブラウザがあるので change も見る
+    const onReach = () => {
+      if(String(slider.value) !== "100") return;
+
+      const countNow = getCount();
+      if(countNow >= LIMIT){
+        showLimitMessage(countNow);
+        // ここで戻す
+        slider.value = 0;
+        slider.disabled = false;
+        return;
+      }
+
+      slider.disabled = true;
+      addCount();
+
+      unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
+      unlockMsg.style.color = "green";
+      startActiveTimeout();
+    };
+
+    slider.oninput = onReach;
+    slider.onchange = onReach;
+  }
+
+  /* =====================
+     上限表示（okBoxの中身を書き換える）
+  ===================== */
+  function showLimitMessage(c){
+    stopAllTimers();
+    statusEl.textContent = "今日はもう3回やわ〜、また明日よろしくで！";
+
+    okBoxEl.style.display = "block";
+    okBoxEl.innerHTML = `
+      <div class="couponBox">
+        <p class="okTitle">⚠️ 本日のご利用上限です</p>
+        <div style="margin-top:10px">
+          この端末は <b>${c}回</b> クリア済みやで。<br>
+          また明日よろしくで！
+        </div>
+        <div class="small" style="margin-top:10px">
+          ※わからんかったらスタッフまで
+        </div>
+      </div>
+    `;
+
+    okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  /* =====================
+     クーポン表示（テンプレを戻してから初期化）
+  ===================== */
+  function showCoupon(){
+    statusEl.textContent = "";
+
+    // まずテンプレ復元
+    okBoxEl.innerHTML = okBoxTemplate;
+    okBoxEl.style.display = "block";
+
+    // ★差し替え後はDOM取り直し必須
+    randEl      = document.getElementById("randNum");
+    issueDateEl = document.getElementById("issueDate");
+    dayCodeEl   = document.getElementById("dayCode");
+    clockEl     = document.getElementById("liveClock");
+
+    setupDateClock();
+    startAuthRefresh();
+    startShowTimeout();
+    initSlider();
+
+    okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
+  }
+
+  /* =====================
+     盤面
+  ===================== */
+  const inputs = [];
+
+  function buildBoard(){
+    boardEl.innerHTML = "";
+    inputs.length = 0;
+
+    for(let r=0;r<9;r++){
+      inputs[r]=[];
+      for(let c=0;c<9;c++){
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        if (c % 3 === 0) cell.classList.add("thickL");
+        if (c % 3 === 2) cell.classList.add("thickR");
+        if (r % 3 === 0) cell.classList.add("thickT");
+        if (r % 3 === 2) cell.classList.add("thickB");
+
+        const inp = document.createElement("input");
+        inp.setAttribute("inputmode","numeric");
+        inp.setAttribute("maxlength","1");
+        inp.dataset.r = r;
+        inp.dataset.c = c;
+
+        const v = puzzle[r][c];
+        if(v !== 0){
+          inp.value = String(v);
+          inp.disabled = true;
+          inp.classList.add("given");
+        } else {
+          inp.addEventListener("input",(e)=>{
+            const x = e.target.value.replace(/[^1-9]/g,"");
+            e.target.value = x;
+            e.target.classList.remove("err");
+            okBoxEl.style.display = "none";
+            statusEl.textContent = "";
+            stopAllTimers();
+          });
+        }
+
+        cell.appendChild(inp);
+        boardEl.appendChild(cell);
+        inputs[r][c] = inp;
+      }
+    }
+  }
+
+  function getUserGrid(){
+    const g = Array.from({length:9},()=>Array(9).fill(0));
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const val = inputs[r][c].value.trim();
+        g[r][c] = val ? Number(val) : 0;
+      }
+    }
+    return g;
+  }
+
+  function isComplete(user){
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(user[r][c] === 0) return false;
+    return true;
+  }
+
+  function markErrors(user){
+    let hasErr = false;
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const inp = inputs[r][c];
+        if(inp.disabled) continue;
+        inp.classList.remove("err");
+        const val = user[r][c];
+        if(val !== 0 && val !== solution[r][c]){
+          inp.classList.add("err");
+          hasErr = true;
+        }
+      }
+    }
+    return hasErr;
+  }
+
+  function isSolved(user){
+    for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(user[r][c] !== solution[r][c]) return false;
+    return true;
+  }
+
+  /* =====================
+     ボタン
+  ===================== */
+  document.getElementById("checkBtn").addEventListener("click", ()=>{
+    const user = getUserGrid();
+
+    if(!isComplete(user)){
+      statusEl.textContent = "まだ空欄があるで。全部埋めてからチェックしてな。";
+      okBoxEl.style.display = "none";
+      stopAllTimers();
       return;
     }
 
-    slider.disabled = true;
-    addCount();
+    const hasErr = markErrors(user);
+    if(hasErr){
+      statusEl.textContent = "惜しい！赤いマスが間違いの可能性高いで。そこ直してみて。";
+      okBoxEl.style.display = "none";
+      stopAllTimers();
+      return;
+    }
 
-    unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
-    unlockMsg.style.color = "green";
-    startActiveTimeout();
-  };
-}  
+    if(isSolved(user)){
+      const count = getCount();
+      if(count >= LIMIT){
+        showLimitMessage(count);
+        return;
+      }
+      showCoupon();
+    } else {
+      statusEl.textContent = "どこか違うみたいや。もう一回見直し！";
+      okBoxEl.style.display = "none";
+      stopAllTimers();
+    }
+  });
 
-/* =====================
-   上限表示（okBoxの中身を書き換える）
-===================== */
-function showLimitMessage(c){
-  stopAllTimers();
-  statusEl.textContent = "今日はもう3回やわ〜、また明日よろしくで！";
+  document.getElementById("resetBtn").addEventListener("click", ()=>{
+    stopAllTimers();
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        const inp = inputs[r][c];
+        if(inp.disabled) continue;
+        inp.value = "";
+        inp.classList.remove("err");
+      }
+    }
+    statusEl.textContent = "";
+    okBoxEl.style.display = "none";
+  });
 
-  okBoxEl.style.display = "block";
-  okBoxEl.innerHTML = `
-    <div class="couponBox">
-      <p class="okTitle">⚠️ 本日のご利用上限です</p>
-      <div style="margin-top:10px">
-        この端末は <b>${c}回</b> クリア済みやで。<br>
-        また明日よろしくで！
-      </div>
-      <div class="small" style="margin-top:10px">
-        ※わからんかったらスタッフまで
-      </div>
-    </div>
-  `;
+  document.getElementById("hintBtn").addEventListener("click", ()=>{
+    const user = getUserGrid();
+    const empties = [];
+    for(let r=0;r<9;r++){
+      for(let c=0;c<9;c++){
+        if(!inputs[r][c].disabled && user[r][c] === 0) empties.push([r,c]);
+      }
+    }
+    if(empties.length === 0){
+      statusEl.textContent = "もう空欄ないで。完成チェック押してな。";
+      return;
+    }
+    const [r,c] = empties[Math.floor(Math.random()*empties.length)];
+    inputs[r][c].value = String(solution[r][c]);
+    inputs[r][c].classList.remove("err");
+    statusEl.textContent = "ヒント入れたで（1マス）。";
+    okBoxEl.style.display = "none";
+    stopAllTimers();
+  });
 
-  okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
-}
-
-/* =====================
-   クーポン表示（テンプレを戻してから初期化）
-===================== */
-function showCoupon(){
-  statusEl.textContent = "";
-
-  // ⑦：上限表示で書き換えた okBox を、元のクーポンUIに戻す
-  okBoxEl.innerHTML = okBoxTemplate;
-  okBoxEl.style.display = "block";
-
-  // ★DOM取り直し（これもセットで）
-  randEl      = document.getElementById("randNum");
-  issueDateEl = document.getElementById("issueDate");
-  dayCodeEl   = document.getElementById("dayCode");
-  clockEl     = document.getElementById("liveClock");
-
+  /* =====================
+     起動
+  ===================== */
+  // okBoxはdisplay:noneでもDOMにはあるので、時計などは準備だけしてOK
   setupDateClock();
-  startAuthRefresh();
-  startShowTimeout();
-  initSlider();
+  buildBoard();
 
-  okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
-}
-/* =====================
-   盤面
-===================== */
-const inputs = [];
+  // 端末が既に上限なら、起動時点で表示したい場合はここをON
+  // if(getCount() >= LIMIT){ showLimitMessage(getCount()); }
 
-function buildBoard(){
-  boardEl.innerHTML = "";
-  inputs.length = 0;
-
-  for(let r=0;r<9;r++){
-    inputs[r]=[];
-    for(let c=0;c<9;c++){
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      if (c % 3 === 0) cell.classList.add("thickL");
-      if (c % 3 === 2) cell.classList.add("thickR");
-      if (r % 3 === 0) cell.classList.add("thickT");
-      if (r % 3 === 2) cell.classList.add("thickB");
-
-      const inp = document.createElement("input");
-      inp.setAttribute("inputmode","numeric");
-      inp.setAttribute("maxlength","1");
-      inp.dataset.r = r;
-      inp.dataset.c = c;
-
-      const v = puzzle[r][c];
-      if(v !== 0){
-        inp.value = String(v);
-        inp.disabled = true;
-        inp.classList.add("given");
-      } else {
-        inp.addEventListener("input",(e)=>{
-          const x = e.target.value.replace(/[^1-9]/g,"");
-          e.target.value = x;
-          e.target.classList.remove("err");
-          okBoxEl.style.display = "none";
-          statusEl.textContent = "";
-          stopAllTimers();
-        });
-      }
-
-      cell.appendChild(inp);
-      boardEl.appendChild(cell);
-      inputs[r][c] = inp;
-    }
-  }
-}
-
-function getUserGrid(){
-  const g = Array.from({length:9},()=>Array(9).fill(0));
-  for(let r=0;r<9;r++){
-    for(let c=0;c<9;c++){
-      const val = inputs[r][c].value.trim();
-      g[r][c] = val ? Number(val) : 0;
-    }
-  }
-  return g;
-}
-
-function isComplete(user){
-  for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(user[r][c] === 0) return false;
-  return true;
-}
-
-function markErrors(user){
-  let hasErr = false;
-  for(let r=0;r<9;r++){
-    for(let c=0;c<9;c++){
-      const inp = inputs[r][c];
-      if(inp.disabled) continue;
-      inp.classList.remove("err");
-      const val = user[r][c];
-      if(val !== 0 && val !== solution[r][c]){
-        inp.classList.add("err");
-        hasErr = true;
-      }
-    }
-  }
-  return hasErr;
-}
-
-function isSolved(user){
-  for(let r=0;r<9;r++) for(let c=0;c<9;c++) if(user[r][c] !== solution[r][c]) return false;
-  return true;
-}
-
-/* =====================
-   ボタン
-===================== */
-document.getElementById("checkBtn").addEventListener("click", ()=>{
-  const user = getUserGrid();
-
-  if(!isComplete(user)){
-    statusEl.textContent = "まだ空欄があるで。全部埋めてからチェックしてな。";
-    okBoxEl.style.display = "none";
-    stopAllTimers();
-    return;
-  }
-
-  const hasErr = markErrors(user);
-  if(hasErr){
-    statusEl.textContent = "惜しい！赤いマスが間違いの可能性高いで。そこ直してみて。";
-    okBoxEl.style.display = "none";
-    stopAllTimers();
-    return;
-  }
-
-  if(isSolved(user)){
-  const count = getCount();
-  if(count >= LIMIT){
-    showLimitMessage(count);
-    return;
-  }
-  showCoupon();
-}else{
-    statusEl.textContent = "どこか違うみたいや。もう一回見直し！";
-    okBoxEl.style.display = "none";
-    stopAllTimers();
-  }
-});
-
-document.getElementById("resetBtn").addEventListener("click", ()=>{
-  stopAllTimers();
-  for(let r=0;r<9;r++){
-    for(let c=0;c<9;c++){
-      const inp = inputs[r][c];
-      if(inp.disabled) continue;
-      inp.value = "";
-      inp.classList.remove("err");
-    }
-  }
-  statusEl.textContent = "";
-  okBoxEl.style.display = "none";
-});
-
-document.getElementById("hintBtn").addEventListener("click", ()=>{
-  const user = getUserGrid();
-  const empties = [];
-  for(let r=0;r<9;r++){
-    for(let c=0;c<9;c++){
-      if(!inputs[r][c].disabled && user[r][c] === 0) empties.push([r,c]);
-    }
-  }
-  if(empties.length === 0){
-    statusEl.textContent = "もう空欄ないで。完成チェック押してな。";
-    return;
-  }
-  const [r,c] = empties[Math.floor(Math.random()*empties.length)];
-  inputs[r][c].value = String(solution[r][c]);
-  inputs[r][c].classList.remove("err");
-  statusEl.textContent = "ヒント入れたで（1マス）。";
-  okBoxEl.style.display = "none";
-  stopAllTimers();
-});
-
-/* =====================
-   起動（これが無いと何も描画されへん）
-===================== */
-setupDateClock();
-buildBoard();
+})();
 </script>
 </body>
 </html>
