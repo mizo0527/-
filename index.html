@@ -358,6 +358,9 @@ function initSlider(){
   unlockMsg.textContent = "スライドで有効化してな";
   unlockMsg.style.color = "#888";
 
+/* =====================
+   スライドUI
+===================== */
 function initSlider(){
   slider = document.getElementById("unlockSlider");
   unlockMsg = document.getElementById("unlockMsg");
@@ -385,7 +388,7 @@ function initSlider(){
     unlockMsg.style.color = "green";
     startActiveTimeout();
   };
-}
+} // ← ここでしっかり閉じる
 /* =====================
    上限表示（okBoxの中身を書き換える）
 ===================== */
