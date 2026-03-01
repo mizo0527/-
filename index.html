@@ -344,20 +344,6 @@ function setupDateClock(){
     clockEl.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }, 200);
 }
-  
-/* =====================
-   スライドUI
-===================== */
-function initSlider(){
-  slider = document.getElementById("unlockSlider");
-  unlockMsg = document.getElementById("unlockMsg");
-  if(!slider || !unlockMsg) return;
-
-  slider.value = 0;
-  slider.disabled = false;
-  unlockMsg.textContent = "スライドで有効化してな";
-  unlockMsg.style.color = "#888";
-
 /* =====================
    スライドUI
 ===================== */
@@ -377,10 +363,8 @@ function initSlider(){
     const countNow = getCount();
     if(countNow >= LIMIT){
       showLimitMessage(countNow);
-
-      // 上限の時は戻す（好み）
       slider.value = 0;
-      slider.disabled = false;
+      slider.disabled = false; // 好みで true でもOK
       return;
     }
 
@@ -391,7 +375,8 @@ function initSlider(){
     unlockMsg.style.color = "green";
     startActiveTimeout();
   };
-}
+}  
+
 /* =====================
    上限表示（okBoxの中身を書き換える）
 ===================== */
