@@ -369,21 +369,22 @@ function initSlider(){
   unlockMsg.style.color = "#888";
 
   slider.oninput = () => {
-    if(String(slider.value) === "100"){
-      const countNow = getCount();
-      if(countNow >= LIMIT){
-  showLimitMessage(countNow);
-  slider.value = 0;
-  slider.disabled = false;   // or true（好み）
-  return;
-}
-      slider.disabled = true;
-      addCount();
+    if(String(slider.value) !== "100") return;
 
-      unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
-      unlockMsg.style.color = "green";
-      startActiveTimeout();
+    const countNow = getCount();
+    if(countNow >= LIMIT){
+      showLimitMessage(countNow);
+      slider.value = 0;
+      slider.disabled = false; // 好みで true でもOK
+      return;
     }
+
+    slider.disabled = true;
+    addCount();
+
+    unlockMsg.textContent = "✔ クーポン有効やで！（5分以内にレジへ）";
+    unlockMsg.style.color = "green";
+    startActiveTimeout();
   };
 }
 /* =====================
@@ -395,12 +396,6 @@ function showLimitMessage(c){
 
   okBoxEl.style.display = "block";
   okBoxEl.innerHTML = `...`;
-
-  // ★ここ（修正③の置き場）
-  if(slider){
-    slider.value = 0;
-    slider.disabled = false;
-  }
 
   okBoxEl.scrollIntoView({behavior:"smooth", block:"start"});
 }
