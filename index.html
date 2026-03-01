@@ -372,11 +372,11 @@ function initSlider(){
     if(String(slider.value) === "100"){
       const countNow = getCount();
       if(countNow >= LIMIT){
-        showLimitMessage(countNow);
-        slider.value = 0;          // ←好みで戻す
-        return;
-      }
-
+  showLimitMessage(countNow);
+  slider.value = 0;
+  slider.disabled = false;   // or true（好み）
+  return;
+}
       slider.disabled = true;
       addCount();
 
